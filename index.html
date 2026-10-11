@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>光的反射定律（沪科版）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1 {
+    font-size: 26px;
+    color: #1a5276;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .author {
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 16px;
+  }
+  canvas {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    cursor: grab;
+  }
+  canvas:active { cursor: grabbing; }
+  .controls {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn {
+    padding: 8px 18px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #fff;
+    color: #333;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: #e8e8e8; }
+  .btn.active {
+    background: #1a5276;
+    color: #fff;
+    border-color: #1a5276;
+  }
+  .btn.reversible.active {
+    background: #27ae60;
+    border-color: #27ae60;
+  }
+  .info-panel {
+    margin-top: 16px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .info-card {
+    background: #fff;
+    padding: 12px 22px;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 130px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  }
+  .info-card .label {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 2px;
+  }
+  .info-card .value {
+    font-size: 26px;
+    font-weight: bold;
+    color: #1a5276;
+  }
+  .info-card .unit {
+    font-size: 13px;
+    color: #aaa;
+  }
+  .law-box {
+    margin-top: 16px;
+    padding: 14px 28px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    max-width: 760px;
+  }
+  .law-box h3 {
+    font-size: 16px;
+    color: #1a5276;
+    margin-bottom: 8px;
+  }
+  .law-box p {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #444;
+  }
+  .law-box .highlight {
+    color: #c0392b;
+    font-weight: bold;
+  }
+  .law-box .green {
+    color: #27ae60;
+    font-weight: bold;
+  }
+  .tip {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+
+<h1>光的反射定律</h1>
+<p class="subtitle">沪科版 · 八年级物理 · 拖动入射光线端点改变入射角</p>
+<p class="author">朱高俊 制</p>
+
+<canvas id="canvas" width="760" height="460"></canvas>
+
+<div class="controls">
+  <button class="btn active" id="normalBtn">显示法线</button>
+  <button class="btn" id="angleBtn">显示角度</button>
+  <button class="btn" id="labelBtn">显示标注</button>
+  <button class="btn reversible" id="reverseBtn">光路可逆</button>
+  <button class="btn" id="resetBtn">↺ 重置</button>
+</div>
+
+<div class="info-panel">
+  <div class="info-card">
+    <div class="label">入射角 ∠i</div>
+    <div class="value" id="incidentVal">45</div>
+    <div class="unit">度</div>
+  </div>
+  <div class="info-card">
+    <div class="label">反射角 ∠r</div>
+    <div class="value" id="reflectVal">45</div>
+    <div class="unit">度</div>
+  </div>
+  <div class="info-card">
+    <div class="label">两角关系</div>
+    <div class="value" style="font-size:18px;">i = r</div>
+    <div class="unit">反射角 = 入射角</div>
+  </div>
+</div>
+
+<div class="law-box">
+  <h3>光的反射定律（沪科版）</h3>
+  <p>
+    ① 反射光线、入射光线和法线在<span class="highlight">同一平面内</span>（三线共面）<br>
+    ② 反射光线和入射光线分居<span class="highlight">法线两侧</span>（两线分居）<br>
+    ③ 反射角<span class="highlight">等于</span>入射角（两角相等）
+  </p>
+  <p style="margin-top:8px;">
+    <span class="green">光路可逆：</span>在反射现象中，光路是可逆的。如果让光逆着反射光线的方向射到镜面，那么它被反射后就会逆着原来入射光线的方向射出。
+  </p>
+  <p class="tip">注意：是"反射角等于入射角"，不是"入射角等于反射角"——先有入射，后有反射。</p>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const normalBtn = document.getElementById('normalBtn');
+const angleBtn = document.getElementById('angleBtn');
+const labelBtn = document.getElementById('labelBtn');
+const reverseBtn = document.getElementById('reverseBtn');
+const resetBtn = document.getElementById('resetBtn');
+const incidentVal = document.getElementById('incidentVal');
+const reflectVal = document.getElementById('reflectVal');
+
+// 画布参数
+const CENTER_X = 380;
+const CENTER_Y = 300;
+const MIRROR_LEN = 300;
+const RAY_LEN = 200;
+
+let incidentAngle = 45;
+let showNormal = true;
+let showAngle = false;
+let showLabel = false;
+let showReverse = false;
+let isDragging = false;
+
+function rad(deg) { return deg * Math.PI / 180; }
+
+// 在光线指定位置画箭头，t=0.5为中点
+function drawArrowAt(x1, y1, x2, y2, color, t) {
+  if (t === undefined) t = 0.5;
+  const mx = x1 + (x2 - x1) * t;
+  const my = y1 + (y2 - y1) * t;
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const arrowLen = 12;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(mx + arrowLen * Math.cos(angle), my + arrowLen * Math.sin(angle));
+  ctx.lineTo(mx - arrowLen * Math.cos(angle - 0.4), my - arrowLen * Math.sin(angle - 0.4));
+  ctx.lineTo(mx - arrowLen * Math.cos(angle + 0.4), my - arrowLen * Math.sin(angle + 0.4));
+  ctx.closePath();
+  ctx.fill();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 镜面
+  const mirrorLeft = CENTER_X - MIRROR_LEN / 2;
+  const mirrorRight = CENTER_X + MIRROR_LEN / 2;
+  
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(mirrorLeft, CENTER_Y);
+  ctx.lineTo(mirrorRight, CENTER_Y);
+  ctx.stroke();
+
+  // 镜面斜线
+  ctx.strokeStyle = '#999';
+  ctx.lineWidth = 1;
+  for (let x = mirrorLeft; x < mirrorRight; x += 12) {
+    ctx.beginPath();
+    ctx.moveTo(x, CENTER_Y);
+    ctx.lineTo(x - 10, CENTER_Y + 14);
+    ctx.stroke();
+  }
+
+  // 法线
+  if (showNormal) {
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([8, 5]);
+    ctx.beginPath();
+    ctx.moveTo(CENTER_X, CENTER_Y - 180);
+    ctx.lineTo(CENTER_X, CENTER_Y + 40);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    if (showLabel) {
+      ctx.fillStyle = '#666';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('法线 N', CENTER_X + 6, CENTER_Y - 165);
+    }
+  }
+
+  // 正向光路：红色入射（左上→O），蓝色反射（O→右上）
+  const incX = CENTER_X - RAY_LEN * Math.sin(rad(incidentAngle));
+  const incY = CENTER_Y - RAY_LEN * Math.cos(rad(incidentAngle));
+  const refX = CENTER_X + RAY_LEN * Math.sin(rad(incidentAngle));
+  const refY = CENTER_Y - RAY_LEN * Math.cos(rad(incidentAngle));
+
+  // 红色入射光线
+  ctx.strokeStyle = '#e74c3c';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(incX, incY);
+  ctx.lineTo(CENTER_X, CENTER_Y);
+  ctx.stroke();
+  drawArrowAt(incX, incY, CENTER_X, CENTER_Y, '#e74c3c', 0.5);
+
+  // 蓝色反射光线
+  ctx.strokeStyle = '#2980b9';
+  ctx.beginPath();
+  ctx.moveTo(CENTER_X, CENTER_Y);
+  ctx.lineTo(refX, refY);
+  ctx.stroke();
+  drawArrowAt(CENTER_X, CENTER_Y, refX, refY, '#2980b9', 0.5);
+
+  // 反向光路（光路可逆）：绿色虚线，光从右上射来，沿原入射方向出去
+  if (showReverse) {
+    // 反向入射：从右上→O（绿色虚线）
+    ctx.strokeStyle = '#27ae60';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(refX, refY);
+    ctx.lineTo(CENTER_X, CENTER_Y);
+    ctx.stroke();
+    drawArrowAt(refX, refY, CENTER_X, CENTER_Y, '#27ae60', 0.3);
+
+    // 反向反射：O→左上（绿色虚线）
+    ctx.beginPath();
+    ctx.moveTo(CENTER_X, CENTER_Y);
+    ctx.lineTo(incX, incY);
+    ctx.stroke();
+    drawArrowAt(CENTER_X, CENTER_Y, incX, incY, '#27ae60', 0.3);
+    ctx.setLineDash([]);
+
+    if (showLabel) {
+      ctx.fillStyle = '#27ae60';
+      ctx.font = '13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('← 反向光路（光路可逆）', CENTER_X, CENTER_Y - 200);
+    }
+  }
+
+  // 入射点
+  ctx.fillStyle = '#333';
+  ctx.beginPath();
+  ctx.arc(CENTER_X, CENTER_Y, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 角度弧线
+  if (showAngle) {
+    const arcR = 50;
+    
+    // 入射角（红）
+    ctx.strokeStyle = '#e74c3c';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(CENTER_X, CENTER_Y, arcR, -Math.PI/2, -Math.PI/2 - rad(incidentAngle), true);
+    ctx.stroke();
+    const labelA = -Math.PI/2 - rad(incidentAngle/2);
+    ctx.fillStyle = '#e74c3c';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('∠i=' + incidentAngle + '°',
+      CENTER_X + (arcR+18)*Math.cos(labelA), CENTER_Y + (arcR+18)*Math.sin(labelA)+5);
+
+    // 反射角（蓝）
+    ctx.strokeStyle = '#2980b9';
+    ctx.beginPath();
+    ctx.arc(CENTER_X, CENTER_Y, arcR, -Math.PI/2, -Math.PI/2 + rad(incidentAngle), false);
+    ctx.stroke();
+    const labelB = -Math.PI/2 + rad(incidentAngle/2);
+    ctx.fillStyle = '#2980b9';
+    ctx.fillText('∠r=' + incidentAngle + '°',
+      CENTER_X + (arcR+18)*Math.cos(labelB), CENTER_Y + (arcR+18)*Math.sin(labelB)+5);
+  }
+
+  // 标注
+  if (showLabel) {
+    ctx.font = '14px sans-serif';
+    ctx.fillStyle = '#e74c3c';
+    ctx.textAlign = 'right';
+    ctx.fillText('入射光线', incX - 8, incY - 8);
+    
+    ctx.fillStyle = '#2980b9';
+    ctx.textAlign = 'left';
+    ctx.fillText('反射光线', refX + 8, refY - 8);
+    
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'left';
+    ctx.fillText('入射点 O', CENTER_X + 8, CENTER_Y + 20);
+    
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.fillText('镜面', mirrorRight - 20, CENTER_Y + 35);
+  }
+
+  // 可拖动提示圈
+  ctx.strokeStyle = 'rgba(231, 76, 60, 0.5)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(incX, incY, 10, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(231, 76, 60, 0.2)';
+  ctx.fill();
+
+  incidentVal.textContent = incidentAngle;
+  reflectVal.textContent = incidentAngle;
+}
+
+// 鼠标拖动
+function getMousePos(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) * canvas.width / rect.width,
+    y: (e.clientY - rect.top) * canvas.height / rect.height
+  };
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  const pos = getMousePos(e);
+  const incX = CENTER_X - RAY_LEN * Math.sin(rad(incidentAngle));
+  const incY = CENTER_Y - RAY_LEN * Math.cos(rad(incidentAngle));
+  if (Math.hypot(pos.x - incX, pos.y - incY) < 30) isDragging = true;
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const pos = getMousePos(e);
+  let angle = Math.atan2(-(pos.x - CENTER_X), -(pos.y - CENTER_Y)) * 180 / Math.PI;
+  incidentAngle = Math.round(Math.max(5, Math.min(85, angle)));
+  draw();
+});
+
+canvas.addEventListener('mouseup', () => { isDragging = false; });
+canvas.addEventListener('mouseleave', () => { isDragging = false; });
+
+// 触摸
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  const pos = getMousePos(e.touches[0]);
+  const incX = CENTER_X - RAY_LEN * Math.sin(rad(incidentAngle));
+  const incY = CENTER_Y - RAY_LEN * Math.cos(rad(incidentAngle));
+  if (Math.hypot(pos.x - incX, pos.y - incY) < 40) isDragging = true;
+});
+
+canvas.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  if (!isDragging) return;
+  const pos = getMousePos(e.touches[0]);
+  let angle = Math.atan2(-(pos.x - CENTER_X), -(pos.y - CENTER_Y)) * 180 / Math.PI;
+  incidentAngle = Math.round(Math.max(5, Math.min(85, angle)));
+  draw();
+});
+
+canvas.addEventListener('touchend', () => { isDragging = false; });
+
+// 按钮
+normalBtn.onclick = () => { showNormal = !showNormal; normalBtn.classList.toggle('active', showNormal); draw(); };
+angleBtn.onclick = () => { showAngle = !showAngle; angleBtn.classList.toggle('active', showAngle); draw(); };
+labelBtn.onclick = () => { showLabel = !showLabel; labelBtn.classList.toggle('active', showLabel); draw(); };
+reverseBtn.onclick = () => { showReverse = !showReverse; reverseBtn.classList.toggle('active', showReverse); draw(); };
+resetBtn.onclick = () => { incidentAngle = 45; draw(); };
+
+draw();
+</script>
+
+</body>
+</html>
+<!-- （注：内容由AI生成） -->
